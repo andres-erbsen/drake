@@ -50,6 +50,8 @@ toolchain {
   cxx_builtin_include_directory: "/usr/include/x86_64-linux-gnu/c++/6"
   cxx_builtin_include_directory: "/usr/include/c++/6/backward"
   cxx_builtin_include_directory: "/usr/lib/gcc/x86_64-linux-gnu/6/include"
+  cxx_builtin_include_directory: "/usr/lib/gcc/x86_64-pc-linux-gnu/6.4.1/include"
+  cxx_builtin_include_directory: "/usr/lib/gcc/x86_64-pc-linux-gnu/6.4.1/include-fixed"
   cxx_builtin_include_directory: "/usr/local/include"
   cxx_builtin_include_directory: "/usr/lib/gcc/x86_64-linux-gnu/6/include-fixed"
   cxx_builtin_include_directory: "/usr/include/x86_64-linux-gnu"
