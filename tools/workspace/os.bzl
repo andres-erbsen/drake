@@ -76,6 +76,8 @@ def _determine_linux(repository_ctx):
     for ubuntu_release in ["16.04"]:
         if distro == "Ubuntu " + ubuntu_release:
             return _make_result(ubuntu_release = ubuntu_release)
+    if distro == 'Arch Linux':
+        return _make_result(ubuntu_release = '16.04')
 
     # Nothing matched.
     return _make_result(
