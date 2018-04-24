@@ -7,6 +7,18 @@ load(
     "drake_cc_googletest",
 )
 load("//tools/lint:lint.bzl", "add_lint_tests")
+load(
+    "@drake//tools/vector_gen:vector_gen.bzl",
+    "drake_cc_vector_gen_library",
+)
+
+drake_cc_vector_gen_library(
+    name = "albatross_vector_types",
+    srcs = [
+        "albatross_input.named_vector",
+    ],
+    visibility = ["//visibility:public"],
+)
 
 drake_cc_library(
     name = "albatross",
@@ -14,6 +26,7 @@ drake_cc_library(
     hdrs = ["albatross.h"],
     visibility = ["//visibility:public"],
     deps = [
+        ":albatross_vector_types",
         "//systems/framework:leaf_system",
         "//systems/framework:system_constraint",
         "//systems/framework:vector",

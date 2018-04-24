@@ -1,6 +1,7 @@
 #include "drake/examples/albatross/albatross.h"
 
 #include "drake/common/default_scalars.h"
+#include "drake/examples/albatross/gen/albatross_input.h"
 #include "drake/systems/framework/basic_vector.h"
 #include "drake/systems/framework/system_constraint.h"
 
@@ -10,61 +11,50 @@ namespace albatross {
 
 template <typename T>
 Albatross<T>::Albatross()
-    : systems::LeafSystem<T>(
-          systems::SystemTypeTag<albatross::Albatross>{}) {
-  // State is (q,q̇).
-  this->DeclareContinuousState(1, 1, 0);
-
-  // First output, y₁ = q, for interesting estimation problems.
-  this->DeclareVectorOutputPort(systems::BasicVector<T>(1),
-                                &Albatross::CopyPositionToOutput);
-
-  // Second output, y₂ = [q,q̇]', for e.g. visualizing the full state.
-  this->DeclareVectorOutputPort(systems::BasicVector<T>(2),
-                                &Albatross::CopyFullStateToOutput);
-
-  // Single parameter, μ, with default μ=1.
-  this->DeclareNumericParameter(systems::BasicVector<T>(Vector1<T>(1.0)));
-
-  // Declare μ≥0 constraint.
-  typename systems::SystemConstraint<T>::CalcCallback mu =
-      [](const systems::Context<T>& context, VectorX<T>* value) {
-        // Extract μ from the parameters.
-        *value = Vector1<T>(context.get_numeric_parameter(0).GetAtIndex(0));
-      };
-  this->DeclareInequalityConstraint(mu, 1, "mu ≥ 0");
+: systems::LeafSystem<T>(systems::SystemTypeTag<albatross::Albatross>{}) {
+  // state: speed, yaw, pitch
+  this->DeclareContinuousState(3, 0, 0);
+  // input: lift coefficient, roll angle
+  this->DeclareVectorInputPort(AlbatrossInput<T>());
 }
 
-// q̈ + μ(q² - 1)q̇ + q = 0
+template <typename T>
+const systems::InputPortDescriptor<T>& Albatross<T>::get_input_port() const {
+  return systems::System<T>::get_input_port(0);
+}
+
 template <typename T>
 void Albatross<T>::DoCalcTimeDerivatives(
     const systems::Context<T>& context,
     systems::ContinuousState<T>* derivatives) const {
-  const T q =
-      context.get_continuous_state().get_generalized_position().GetAtIndex(0);
-  const T qdot =
-      context.get_continuous_state().get_generalized_velocity().GetAtIndex(0);
-  const T mu = context.get_numeric_parameter(0).GetAtIndex(0);
+  // TODO: parametrize
+  // DS Kinetic 60
+  const double m = 2;
+  const double g = 10;
+  const double cD0 = .005;
+  const double k = .08;
+  const double S = .23;
+  const double rho = 1; // TODO real value
 
-  using std::pow;
-  const T qddot = -mu * (q * q - 1) * qdot - q;
+  const T speed = context.get_continuous_state().get_generalized_position().GetAtIndex(0);
+  const T yaw   = context.get_continuous_state().get_generalized_position().GetAtIndex(1);
+  const T pitch = context.get_continuous_state().get_generalized_position().GetAtIndex(2);
+  //const T altitude = context.get_continuous_state().get_generalized_position().GetAtIndex(3);
 
-  derivatives->get_mutable_generalized_position().SetAtIndex(0, qdot);
-  derivatives->get_mutable_generalized_velocity().SetAtIndex(0, qddot);
-}
+  const T cL = this->EvalVectorInput(context, 0)->GetAtIndex(0);
 
-template <typename T>
-void Albatross<T>::CopyPositionToOutput(
-    const systems::Context<T>& context, systems::BasicVector<T>* output) const {
-  output->SetAtIndex(
-      0,
-      context.get_continuous_state().get_generalized_position().GetAtIndex(0));
-}
+  const T cD = cD0 + k*cL*cL;
+  const T D = .5*cD*rho*S*speed*speed;
+  const T L = .5*cL*rho*S*speed*speed;
 
-template <typename T>
-void Albatross<T>::CopyFullStateToOutput(
-    const systems::Context<T>& context, systems::BasicVector<T>* output) const {
-  output->SetFromVector(context.get_continuous_state_vector().CopyToVector());
+  const T altitude_dot = speed*sin(pitch);
+  const T Wd = 0*altitude_dot;
+  const T roll = 0;
+
+  derivatives->get_mutable_generalized_position().SetAtIndex(0, 1/(m)*(                             -D      - m*g*sin(pitch) + m*Wd*cos(pitch)*sin(yaw)));
+  derivatives->get_mutable_generalized_position().SetAtIndex(1, 1/(m*10 /*speed*/)*(            L*cos(roll) - m*g*cos(pitch) - m*Wd*sin(pitch)*sin(yaw)));
+  derivatives->get_mutable_generalized_position().SetAtIndex(2, 1/(m*10 /*speed*cos(pitch)*/)*( L*sin(roll)                  + m*Wd           *cos(yaw)));
+  //derivatives->get_mutable_generalized_position().SetAtIndex(3, altitude_dot);
 }
 
 }  // namespace albatross

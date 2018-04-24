@@ -13,24 +13,24 @@ int trajectory_optimization() {
   printf("albatross trajectory optimization...\n");
 
   auto albatross = std::make_unique<Albatross<double>>();
-  // albatross->set_name("albatross");
   auto context = albatross->CreateDefaultContext();
 
-  const int kNumTimeSamples = 41;
-  const double kMinimumTimeStep = 6./(kNumTimeSamples-1);
-  const double kMaximumTimeStep = 7.5/(kNumTimeSamples-1);
+  const int N = 41;
+  const double dt_max = .1;
+  const double dt_min = .1;
+
   systems::trajectory_optimization::DirectCollocation dircol(
-      albatross.get(), *context, kNumTimeSamples, kMinimumTimeStep,
-      kMaximumTimeStep);
+      albatross.get(), *context, N, dt_min, dt_max);
   dircol.AddEqualTimeIntervalsConstraints();
 
-  const Eigen::Vector2d initial_state(-0.1144, 2.0578);
-  dircol.AddLinearConstraint(dircol.initial_state()(0) <= initial_state(0)/2);
-  dircol.AddLinearConstraint(dircol.initial_state()(1) >= initial_state(1)/2);
-  dircol.AddLinearConstraint(dircol.final_state()(0) - dircol.initial_state()(0) <= 5);
-  dircol.AddLinearConstraint(dircol.final_state()(0) - dircol.initial_state()(0) >= -5);
-  dircol.AddLinearConstraint(dircol.final_state()(1) - dircol.initial_state()(1) <= 5);
-  dircol.AddLinearConstraint(dircol.final_state()(1) - dircol.initial_state()(1) >= -5);
+  const Eigen::Vector3d initial_state(10, 0, 0);
+  dircol.AddLinearConstraint(dircol.initial_state() == initial_state);
+
+  dircol.AddConstraintToAllKnotPoints(0 <= dircol.input()(0));
+  dircol.AddConstraintToAllKnotPoints(dircol.input()(0) <= 1.2);
+
+  dircol.AddRunningCost(dircol.input()(0));
+  dircol.AddFinalCost(100*dircol.state()(0));
 
   printf("num_vars = %d\n", dircol.num_vars());
 
@@ -40,10 +40,11 @@ int trajectory_optimization() {
     return 1;
   }
 
+  auto inputs = dircol.ReconstructInputTrajectory();
   auto traj = dircol.ReconstructStateTrajectory();
   auto t = traj.get_segment_times();
   for (size_t i = 0; i < t.size(); i++) {
-    printf("%3.3f: %3.3f %3.3f\n", t[i], traj.value(t[i]).coeff(0), traj.value(t[i]).coeff(1));
+    printf("%3.3f: %3.3f %3.3f %3.3f <<- %3.3f\n", t[i], traj.value(t[i]).coeff(0), traj.value(t[i]).coeff(1), traj.value(t[i]).coeff(2), inputs.value(t[i]).coeff(0));
   }
 
   return 0;
