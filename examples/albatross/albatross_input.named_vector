@@ -13,3 +13,10 @@ element {
     doc_units: "radians"
     default_value: "0.0"
 }
+
+element {
+    name: "w"
+    doc: "horizontal wind speed gradient wrt vertical position."
+    doc_units: "(m/s)/m"
+    default_value: "0.0"
+}

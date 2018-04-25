@@ -14,7 +14,7 @@ Albatross<T>::Albatross()
 : systems::LeafSystem<T>(systems::SystemTypeTag<albatross::Albatross>{}) {
   // state: speed, pitch, yaw, z, //x, y
   this->DeclareContinuousState(4, 0, 0);
-  // input: lift coefficient, roll angle
+  // input: lift coefficient, roll angle, wind gradient
   this->DeclareVectorInputPort(AlbatrossInput<T>());
 }
 
@@ -35,7 +35,6 @@ void Albatross<T>::DoCalcTimeDerivatives(
   const double k = .08;
   const double S = .23;
   const double rho = 1; // TODO real value
-  const double windspeed_gradient = .6; // .02 bottom edge of jetstrem at 5km..
 
   const T speed = context.get_continuous_state().get_generalized_position().GetAtIndex(0);
   const T pitch = context.get_continuous_state().get_generalized_position().GetAtIndex(1);
@@ -44,6 +43,7 @@ void Albatross<T>::DoCalcTimeDerivatives(
 
   const T cL = this->EvalVectorInput(context, 0)->GetAtIndex(0);
   const T roll = this->EvalVectorInput(context, 0)->GetAtIndex(1);
+  const T windspeed_gradient = this->EvalVectorInput(context, 0)->GetAtIndex(2);
 
   const T cD = cD0 + k*cL*cL;
   const T D = .5*cD*rho*S*speed*speed;

@@ -52,6 +52,8 @@ int trajectory_optimization() {
   dircol.AddConstraintToAllKnotPoints(dircol.input()(1) >= -acos(0.)/4);
   dircol.AddConstraintToAllKnotPoints(dircol.input()(1) <= acos(0.)/4);
 
+  dircol.AddConstraintToAllKnotPoints(dircol.input()(2) == 1);
+
   printf("num_vars = %d\n", dircol.num_vars());
 
   {
