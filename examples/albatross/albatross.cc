@@ -51,9 +51,9 @@ void Albatross<T>::DoCalcTimeDerivatives(
   const T Wd = 0*altitude_dot;
   const T roll = 0;
 
-  derivatives->get_mutable_generalized_position().SetAtIndex(0, 1/(m)*(                             -D      - m*g*sin(pitch) + m*Wd*cos(pitch)*sin(yaw)));
-  derivatives->get_mutable_generalized_position().SetAtIndex(1, 1/(m*10 /*speed*/)*(            L*cos(roll) - m*g*cos(pitch) - m*Wd*sin(pitch)*sin(yaw)));
-  derivatives->get_mutable_generalized_position().SetAtIndex(2, 1/(m*10 /*speed*cos(pitch)*/)*( L*sin(roll)                  + m*Wd           *cos(yaw)));
+  derivatives->get_mutable_generalized_position().SetAtIndex(0, 1/(m)*(                              -D      - m*g*sin(pitch) + m*Wd*cos(pitch)*sin(yaw)));
+  derivatives->get_mutable_generalized_position().SetAtIndex(1, 1/(m*(.0001+speed))*(            L*cos(roll) - m*g*cos(pitch) - m*Wd*sin(pitch)*sin(yaw)));
+  derivatives->get_mutable_generalized_position().SetAtIndex(2, 1/(m*(.0001+speed)*cos(pitch))*( L*sin(roll)                  + m*Wd           *cos(yaw)));
   //derivatives->get_mutable_generalized_position().SetAtIndex(3, altitude_dot);
 }
 

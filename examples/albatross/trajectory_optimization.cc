@@ -15,22 +15,23 @@ int trajectory_optimization() {
   auto albatross = std::make_unique<Albatross<double>>();
   auto context = albatross->CreateDefaultContext();
 
-  const int N = 41;
-  const double dt_max = .1;
-  const double dt_min = .1;
+  const int N = 21;
+  const double dt_min = .05;
+  const double dt_max = .5;
 
   systems::trajectory_optimization::DirectCollocation dircol(
       albatross.get(), *context, N, dt_min, dt_max);
   dircol.AddEqualTimeIntervalsConstraints();
 
-  const Eigen::Vector3d initial_state(10, 0, 0);
+  const Eigen::Vector3d initial_state(25, 0, 0);
   dircol.AddLinearConstraint(dircol.initial_state() == initial_state);
 
-  dircol.AddConstraintToAllKnotPoints(0 <= dircol.input()(0));
+  dircol.AddConstraintToAllKnotPoints(dircol.state()(1) >= 0);
+
+  dircol.AddConstraintToAllKnotPoints(dircol.input()(0) >= 0);
   dircol.AddConstraintToAllKnotPoints(dircol.input()(0) <= 1.2);
 
   dircol.AddRunningCost(dircol.input()(0));
-  dircol.AddFinalCost(100*dircol.state()(0));
 
   printf("num_vars = %d\n", dircol.num_vars());
 

@@ -1,0 +1,8 @@
+namespace: "drake::examples::albatross"
+
+element {
+    name: "cL"
+    doc: "Lift coefficient."
+    doc_units: "unitless"
+    default_value: "0.0"
+}
