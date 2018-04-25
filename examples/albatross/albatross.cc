@@ -12,7 +12,7 @@ namespace albatross {
 template <typename T>
 Albatross<T>::Albatross()
 : systems::LeafSystem<T>(systems::SystemTypeTag<albatross::Albatross>{}) {
-  // state: speed, pitch, yaw
+  // state: speed, pitch, yaw, z, //x, y
   this->DeclareContinuousState(4, 0, 0);
   // input: lift coefficient, roll angle
   this->DeclareVectorInputPort(AlbatrossInput<T>());
@@ -56,6 +56,8 @@ void Albatross<T>::DoCalcTimeDerivatives(
   derivatives->get_mutable_generalized_position().SetAtIndex(1, 1/(m*(.0001+speed))*(            L*cos(roll) - m*g*cos(pitch) - m*Wd*sin(pitch)*sin(yaw)));
   derivatives->get_mutable_generalized_position().SetAtIndex(2, 1/(m*(.0001+speed)*cos(pitch))*( L*sin(roll)                  + m*Wd           *cos(yaw)));
   derivatives->get_mutable_generalized_position().SetAtIndex(3, altitude_dot);
+  //derivatives->get_mutable_generalized_position().SetAtIndex(4, speed*cos(pitch)*cos(yaw));
+  //derivatives->get_mutable_generalized_position().SetAtIndex(5, speed*cos(pitch)*sin(yaw) - altitude*windspeed_gradient);
 }
 
 }  // namespace albatross

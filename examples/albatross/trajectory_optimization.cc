@@ -81,10 +81,10 @@ int trajectory_optimization() {
     dircol.AddRunningCost(1/N*dircol.input()(1)*dircol.input()(1));
     //dircol.AddFinalCost(-(9.8*dircol.state()(3) + .5*dircol.state()(0)*dircol.state()(0)) ); // m(gh + .5vv)
     //dircol.AddFinalCost(1000.0*dircol.time());
-    dircol.AddFinalCost((dircol.state()(0) - initial_state(0))*(dircol.state()(0) - initial_state(0)));
-    dircol.AddFinalCost(100*(dircol.state()(1) - initial_state(1))*(dircol.state()(1) - initial_state(1)));
-    dircol.AddFinalCost(500*(dircol.state()(2)+4*acos(0) - initial_state(2))*(dircol.state()(2)+4*acos(0) - initial_state(2)));
-    dircol.AddFinalCost((dircol.state()(3) - initial_state(3))*(dircol.state()(3) - initial_state(3)));
+    dircol.AddFinalCost((dircol.state()(0) - dircol.initial_state()(0))*(dircol.state()(0) - dircol.initial_state()(0)));
+    dircol.AddFinalCost(10*(dircol.state()(1) - dircol.initial_state()(1))*(dircol.state()(1) - dircol.initial_state()(1)));
+    dircol.AddFinalCost(50*(dircol.state()(2)+4*acos(0) - dircol.initial_state()(2))*(dircol.state()(2)+4*acos(0) - dircol.initial_state()(2)));
+    dircol.AddFinalCost((dircol.state()(3) - dircol.initial_state()(3))*(dircol.state()(3) - dircol.initial_state()(3)));
 
     auto result = dircol.Solve();
     if (result != solvers::SolutionResult::kSolutionFound) {
