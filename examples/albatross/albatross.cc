@@ -35,7 +35,7 @@ void Albatross<T>::DoCalcTimeDerivatives(
   const double k = .08;
   const double S = .23;
   const double rho = 1; // TODO real value
-  const double windspeed_gradient = 1; // .02 bottom edge of jetstrem at 5km..
+  const double windspeed_gradient = .6; // .02 bottom edge of jetstrem at 5km..
 
   const T speed = context.get_continuous_state().get_generalized_position().GetAtIndex(0);
   const T pitch = context.get_continuous_state().get_generalized_position().GetAtIndex(1);
