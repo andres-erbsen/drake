@@ -15,9 +15,9 @@ int trajectory_optimization() {
   auto albatross = std::make_unique<Albatross<double>>();
   auto context = albatross->CreateDefaultContext();
 
-  const int N = 11;
-  const double dt_min = .1;
-  const double dt_max = .1;
+  const int N = 401;
+  const double dt_min = .02;
+  const double dt_max = .2;
 
   systems::trajectory_optimization::DirectCollocation dircol(
       albatross.get(), *context, N, dt_min, dt_max);
@@ -25,6 +25,11 @@ int trajectory_optimization() {
 
   const Eigen::Vector4d initial_state(25, 0, 0, 0);
   dircol.AddLinearConstraint(dircol.initial_state() == initial_state);
+
+  auto uu = dircol.NewContinuousVariables(1, "uu");
+  dircol.AddConstraintToAllKnotPoints(dircol.input()(0) == uu(0));
+  auto rr = dircol.NewContinuousVariables(1, "rr");
+  dircol.AddConstraintToAllKnotPoints(dircol.input()(1) == rr(0));
 
   dircol.AddConstraintToAllKnotPoints(dircol.state()(0) >= 15);
   dircol.AddConstraintToAllKnotPoints(dircol.state()(0) <= 35);
@@ -72,9 +77,14 @@ int trajectory_optimization() {
   {
     dircol.SetInitialTrajectory(dircol.ReconstructInputTrajectory(), dircol.ReconstructStateTrajectory());
 
-    dircol.AddRunningCost(.00001*dircol.input()(0)*dircol.input()(0));
-    dircol.AddRunningCost(.0001*dircol.input()(1)*dircol.input()(1));
-    dircol.AddFinalCost(-(9.8*dircol.state()(3) + .5*dircol.state()(0)*dircol.state()(0)) ); // m(gh + .5vv)
+    dircol.AddRunningCost(1/N*dircol.input()(0)*dircol.input()(0));
+    dircol.AddRunningCost(1/N*dircol.input()(1)*dircol.input()(1));
+    //dircol.AddFinalCost(-(9.8*dircol.state()(3) + .5*dircol.state()(0)*dircol.state()(0)) ); // m(gh + .5vv)
+    //dircol.AddFinalCost(1000.0*dircol.time());
+    dircol.AddFinalCost((dircol.state()(0) - initial_state(0))*(dircol.state()(0) - initial_state(0)));
+    dircol.AddFinalCost(100*(dircol.state()(1) - initial_state(1))*(dircol.state()(1) - initial_state(1)));
+    dircol.AddFinalCost(500*(dircol.state()(2)+4*acos(0) - initial_state(2))*(dircol.state()(2)+4*acos(0) - initial_state(2)));
+    dircol.AddFinalCost((dircol.state()(3) - initial_state(3))*(dircol.state()(3) - initial_state(3)));
 
     auto result = dircol.Solve();
     if (result != solvers::SolutionResult::kSolutionFound) {
