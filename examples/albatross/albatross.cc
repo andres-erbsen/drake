@@ -12,7 +12,7 @@ namespace albatross {
 template <typename T>
 Albatross<T>::Albatross()
 : systems::LeafSystem<T>(systems::SystemTypeTag<albatross::Albatross>{}) {
-  // state: speed, yaw, pitch
+  // state: speed, pitch, yaw
   this->DeclareContinuousState(3, 0, 0);
   // input: lift coefficient, roll angle
   this->DeclareVectorInputPort(AlbatrossInput<T>());
@@ -37,11 +37,12 @@ void Albatross<T>::DoCalcTimeDerivatives(
   const double rho = 1; // TODO real value
 
   const T speed = context.get_continuous_state().get_generalized_position().GetAtIndex(0);
-  const T yaw   = context.get_continuous_state().get_generalized_position().GetAtIndex(1);
-  const T pitch = context.get_continuous_state().get_generalized_position().GetAtIndex(2);
+  const T pitch = context.get_continuous_state().get_generalized_position().GetAtIndex(1);
+  const T yaw   = context.get_continuous_state().get_generalized_position().GetAtIndex(2);
   //const T altitude = context.get_continuous_state().get_generalized_position().GetAtIndex(3);
 
   const T cL = this->EvalVectorInput(context, 0)->GetAtIndex(0);
+  const T roll = this->EvalVectorInput(context, 0)->GetAtIndex(1);
 
   const T cD = cD0 + k*cL*cL;
   const T D = .5*cD*rho*S*speed*speed;
@@ -49,7 +50,6 @@ void Albatross<T>::DoCalcTimeDerivatives(
 
   const T altitude_dot = speed*sin(pitch);
   const T Wd = 0*altitude_dot;
-  const T roll = 0;
 
   derivatives->get_mutable_generalized_position().SetAtIndex(0, 1/(m)*(                              -D      - m*g*sin(pitch) + m*Wd*cos(pitch)*sin(yaw)));
   derivatives->get_mutable_generalized_position().SetAtIndex(1, 1/(m*(.0001+speed))*(            L*cos(roll) - m*g*cos(pitch) - m*Wd*sin(pitch)*sin(yaw)));

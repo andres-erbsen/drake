@@ -6,3 +6,10 @@ element {
     doc_units: "unitless"
     default_value: "0.0"
 }
+
+element {
+    name: "roll"
+    doc: "roll angle."
+    doc_units: "radians"
+    default_value: "0.0"
+}
